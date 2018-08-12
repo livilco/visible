@@ -10,7 +10,9 @@ export default Ember.Service.extend({
     This function is the heart of the service, it determines
     if the document is visible or not
   */
-  determineVisibility: function() {
+  determineVisibility() {
+    if (this.get('isDestroyed')) { return; }
+
     var state = document[this.get("visibleStateName")];
     switch (state) {
      case "visible":
@@ -21,13 +23,14 @@ export default Ember.Service.extend({
     }
   },
 
-  init: function() {
+  init() {
     this._super();
     this.setupVendorSupport();
     this.setupEventListeners();
     this.determineVisibility();
   },
-  setupVendorSupport: function() {
+
+  setupVendorSupport() {
     if (typeof document.mozHidden !== "undefined") {
       this.set("visibilityChangeEvent", "mozvisibilitychange");
       this.set("visibleStateName", "mozVisibilityState");
@@ -40,8 +43,7 @@ export default Ember.Service.extend({
     }
   },
 
-
-  setupEventListeners: function() {
+  setupEventListeners() {
     this._onFocus = Ember.run.bind(this, 'determineVisibility');
     document.addEventListener(this.get("visibilityChangeEvent"), this._onFocus);
 
@@ -53,7 +55,8 @@ export default Ember.Service.extend({
     window.addEventListener('blur', this._onBlur);
     window.addEventListener('focus', this._onFocus);
   },
-  willDestroy: function() {
+
+  willDestroy() {
     window.removeEventListener('blur', this._onBlur);
     window.removeEventListener('focus', this._onFocus);
   }
