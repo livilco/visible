@@ -39,18 +39,23 @@ export default Ember.Service.extend({
       this.set("visibleStateName", "webkitVisibilityState");
     }
   },
+
+
   setupEventListeners: function() {
-    var boundCallback = Ember.run.bind(this, 'determineVisibility');
-    document.addEventListener(this.get("visibilityChangeEvent"), boundCallback);
-    window.onblur = () => {
+    this._onFocus = Ember.run.bind(this, 'determineVisibility');
+    document.addEventListener(this.get("visibilityChangeEvent"), this._onFocus);
+
+    this._onBlur = () => {
       this.set("state", "blur");
       this.set("now", false);
     };
-    window.onfocus = boundCallback;
+
+    window.addEventListener('blur', this._onBlur);
+    window.addEventListener('focus', this._onFocus);
   },
   willDestroy: function() {
-    window.onblur = () => {};
-    window.onfocus = () => {};
+    window.removeEventListener('blur', this._onBlur);
+    window.removeEventListener('focus', this._onFocus);
   }
 
 });
